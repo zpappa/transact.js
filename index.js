@@ -12,7 +12,6 @@ var Promise = require("bluebird");
 var forEach = require("lodash.foreach");
 var forEachRight = require("lodash.foreachright");
 var isFunction = require("lodash.isfunction");
-var partial = require("lodash.partial");
 
 /**
  * A transaction item is effectively a step in the transaction process with a defined forward and backward movement
