@@ -1,6 +1,6 @@
 {
   "name": "transact.js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Simple Node JS based transaction manager for asynchronous (promise based) transaction management.",
   "main": "index.js",
   "scripts": {
