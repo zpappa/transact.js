@@ -1,0 +1,112 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/bin/node', '/usr/bin/npm', 'publish' ]
+2 info using npm@2.15.9
+3 info using node@v4.6.0
+4 verbose publish [ '.' ]
+5 silly cache add args [ '.', null ]
+6 verbose cache add spec .
+7 silly cache add parsed spec Result {
+7 silly cache add   raw: '.',
+7 silly cache add   scope: null,
+7 silly cache add   name: null,
+7 silly cache add   rawSpec: '.',
+7 silly cache add   spec: '/home/zeashan/Code/transact.js',
+7 silly cache add   type: 'directory' }
+8 verbose addLocalDirectory /home/zeashan/.npm/transact.js/0.0.1/package.tgz not in flight; packing
+9 verbose correctMkdir /home/zeashan/.npm correctMkdir not in flight; initializing
+10 verbose tar pack [ '/home/zeashan/.npm/transact.js/0.0.1/package.tgz',
+10 verbose tar pack   '/home/zeashan/Code/transact.js' ]
+11 verbose tarball /home/zeashan/.npm/transact.js/0.0.1/package.tgz
+12 verbose folder /home/zeashan/Code/transact.js
+13 info prepublish transact.js@0.0.1
+14 verbose addLocalTarball adding from inside cache /home/zeashan/.npm/transact.js/0.0.1/package.tgz
+15 verbose correctMkdir /home/zeashan/.npm correctMkdir not in flight; initializing
+16 silly cache afterAdd transact.js@0.0.1
+17 verbose afterAdd /home/zeashan/.npm/transact.js/0.0.1/package/package.json not in flight; writing
+18 verbose correctMkdir /home/zeashan/.npm correctMkdir not in flight; initializing
+19 verbose afterAdd /home/zeashan/.npm/transact.js/0.0.1/package/package.json written
+20 silly publish { name: 'transact.js',
+20 silly publish   version: '0.0.1',
+20 silly publish   description: 'Simple Node JS based transaction manager for asynchronous (promise based) transaction management.',
+20 silly publish   main: 'index.js',
+20 silly publish   scripts:
+20 silly publish    { build: 'babel src/Transaction.js -s --out-file index.js',
+20 silly publish      test: 'mocha --reporter spec' },
+20 silly publish   repository: { type: 'git', url: 'http://gitrepo' },
+20 silly publish   keywords: [ 'transaction', 'promise', 'manager' ],
+20 silly publish   author: { name: 'zpappa' },
+20 silly publish   license: 'MIT',
+20 silly publish   dependencies:
+20 silly publish    { bluebird: '^3.5.0',
+20 silly publish      'lodash.foreach': '^4.5.0',
+20 silly publish      'lodash.foreachright': '^4.4.0',
+20 silly publish      'lodash.isfunction': '^3.0.8' },
+20 silly publish   devDependencies:
+20 silly publish    { 'babel-cli': '^6.24.1',
+20 silly publish      'babel-preset-es2015': '^6.24.1',
+20 silly publish      chai: '^4.0.2',
+20 silly publish      mocha: '^3.4.2' },
+20 silly publish   readme: 'transact.js\n\nsimple transaction management\n\nA relatively simple transaction management library that simply seeks tp provide an abstraction for working with promises in a transactional manner.\n\nDo not use this for state management, use redux, flux, mobx, or alt, or some other state management library.\n\nUse this as an abstraction for managing complex transactions that involve side effects outside of your immediate system.\n\nNote that Transaction.runSerial will reduce results together, allowing you to pass results forward from resolved step to resolved step.\n\nUsage:\n\nnpm install transact.js --save\n\n```javascript\nvar Promise = require(\'bluebird\');\nvar TransactionItem = require(\'transact.js\').TransactionItem;\n\nvar Transaction = require(\'transact.js\').Transaction;\n\nvar item = new TransactionItem( \n                               ()=>{ console.log("applying some change to some system"); \n                                     return Promise.resolve(); } \n                              ,()=>{ console.log("reversing some change to some system"); \n                                     return Promise.resolve(); } \n                              ) \nvar trns = new Transaction(null, item); \ntrns.runParallel().then(() => {...}); \ntrns.runSerial().then(() => {...});\n```',
+20 silly publish   readmeFilename: 'README.md',
+20 silly publish   gitHead: '6ed749830919f85c07b13e424b1b2c588b634af3',
+20 silly publish   _id: 'transact.js@0.0.1',
+20 silly publish   _shasum: '805f6281b3b0093b2b79e2e4aa953e00072efa9c',
+20 silly publish   _from: '.' }
+21 verbose getPublishConfig undefined
+22 silly mapToRegistry name transact.js
+23 silly mapToRegistry using default registry
+24 silly mapToRegistry registry https://registry.npmjs.org/
+25 silly mapToRegistry data Result {
+25 silly mapToRegistry   raw: 'transact.js',
+25 silly mapToRegistry   scope: null,
+25 silly mapToRegistry   name: 'transact.js',
+25 silly mapToRegistry   rawSpec: '',
+25 silly mapToRegistry   spec: 'latest',
+25 silly mapToRegistry   type: 'tag' }
+26 silly mapToRegistry uri https://registry.npmjs.org/transact.js
+27 verbose publish registryBase https://registry.npmjs.org/
+28 silly publish uploading /home/zeashan/.npm/transact.js/0.0.1/package.tgz
+29 verbose request uri https://registry.npmjs.org/transact.js
+30 verbose request sending authorization for write operation
+31 info attempt registry request try #1 at 3:46:49 PM
+32 verbose request using bearer token for auth
+33 verbose request id 14a8f3087bcf0906
+34 http request PUT https://registry.npmjs.org/transact.js
+35 http 403 https://registry.npmjs.org/transact.js
+36 verbose headers { 'content-type': 'application/json',
+36 verbose headers   'cache-control': 'max-age=300',
+36 verbose headers   'content-length': '95',
+36 verbose headers   'accept-ranges': 'bytes',
+36 verbose headers   date: 'Thu, 06 Jul 2017 19:46:55 GMT',
+36 verbose headers   via: '1.1 varnish',
+36 verbose headers   connection: 'keep-alive',
+36 verbose headers   'x-served-by': 'cache-iad2126-IAD',
+36 verbose headers   'x-cache': 'MISS',
+36 verbose headers   'x-cache-hits': '0',
+36 verbose headers   'x-timer': 'S1499370415.644244,VS0,VE506',
+36 verbose headers   vary: 'Accept-Encoding' }
+37 verbose request invalidating /home/zeashan/.npm/registry.npmjs.org/transact.js on PUT
+38 error publish Failed PUT 403
+39 verbose stack Error: "You cannot publish over the previously published version 0.0.1." : transact.js
+39 verbose stack     at makeError (/usr/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:264:12)
+39 verbose stack     at CachingRegistryClient.<anonymous> (/usr/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:252:14)
+39 verbose stack     at Request._callback (/usr/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:172:14)
+39 verbose stack     at Request.self.callback (/usr/lib/node_modules/npm/node_modules/request/request.js:200:22)
+39 verbose stack     at emitTwo (events.js:87:13)
+39 verbose stack     at Request.emit (events.js:172:7)
+39 verbose stack     at Request.<anonymous> (/usr/lib/node_modules/npm/node_modules/request/request.js:1067:10)
+39 verbose stack     at emitOne (events.js:82:20)
+39 verbose stack     at Request.emit (events.js:169:7)
+39 verbose stack     at IncomingMessage.<anonymous> (/usr/lib/node_modules/npm/node_modules/request/request.js:988:12)
+40 verbose statusCode 403
+41 verbose pkgid transact.js
+42 verbose cwd /home/zeashan/Code/transact.js
+43 error Linux 4.7.6-100.fc23.x86_64
+44 error argv "/usr/bin/node" "/usr/bin/npm" "publish"
+45 error node v4.6.0
+46 error npm  v2.15.9
+47 error code E403
+48 error "You cannot publish over the previously published version 0.0.1." : transact.js
+49 error If you need help, you may report this error at:
+49 error     <https://github.com/npm/npm/issues>
+50 verbose exit [ 1, true ]

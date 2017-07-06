@@ -1,6 +1,6 @@
 {
   "name": "transact.js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Simple Node JS based transaction manager for asynchronous (promise based) transaction management.",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://gitrepo"
+    "url": "https://github.com/zpappa/transact.js/"
   },
   "keywords": [
     "transaction",
