@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/zpappa/transact.js.svg?branch=master)](https://travis-ci.org/zpappa/transact.js)
+[![Build Status](https://travis-ci.org/zpappa/transact.js.svg?branch=master)](https://travis-ci.org/zpappa/transact.js) [![codecov](https://codecov.io/gh/zpappa/transact.js/branch/master/graph/badge.svg)](https://codecov.io/gh/zpappa/transact.js)
+
 # transact.js
 
 ## simple transaction management
