@@ -1,0 +1,33 @@
+{
+  "name": "transact.js",
+  "version": "0.0.1",
+  "description": "Simple Node JS based transaction manager for asynchronous (promise based) transaction management.",
+  "main": "index.js",
+  "scripts": {
+    "build": "babel src/Transaction.js -s --out-file index.js",
+    "test": "mocha --reporter spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://gitrepo"
+  },
+  "keywords": [
+    "transaction",
+    "promise",
+    "manager"
+  ],
+  "author": "zpappa",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "lodash.foreach": "^4.5.0",
+    "lodash.foreachright": "^4.4.0",
+    "lodash.isfunction": "^3.0.8"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "chai": "^4.0.2",
+    "mocha": "^3.4.2"
+  }
+}
