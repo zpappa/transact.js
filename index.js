@@ -12,7 +12,6 @@ var Promise = require("bluebird");
 var forEach = require("lodash.foreach");
 var forEachRight = require("lodash.foreachright");
 var isFunction = require("lodash.isfunction");
-var cloneDeep = require("lodash.clonedeep");
 var partial = require("lodash.partial");
 
 /**
