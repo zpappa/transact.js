@@ -2,18 +2,19 @@
 
 ## simple transaction management
 
-A relatively simple transaction management library that simply seeks to provide an abstraction for working with promises in a transactional manner.
+A relatively simple transaction management library that seeks to provide an abstraction for working with promises in a transactional manner.
 
-*Do not use this for state management, use redux, flux, mobx, or alt, or some other state management library.*
+Each 'TransactionItem' is simply a promise to do something AND a promise to undo something. 
+
+An ordered collection of such items is considered a 'Transaction'. A Transaction can be executed such that the associated TransactionItems are executed in parallel or in serial.
 
 Use this as an abstraction for managing complex transactions that involve side effects outside of your immediate system.
-
-Note that Transaction.runSerial will reduce results together, allowing you to pass results forward from resolved step to resolved step.
 
 ### Usage:
 
 npm install transact.js --save
 
+###Basic example
 ```javascript
 const Promise = require('bluebird');
 const TransactionItem = require('transact.js').TransactionItem;
@@ -25,7 +26,55 @@ let item = new TransactionItem(
                               ,()=>{ console.log("reversing some change to some system"); 
                                      return Promise.resolve(); } 
                               ) 
-let trns = new Transaction(null, item); 
+let trns = new Transaction(null, [item]); 
 trns.runParallel().then(() => {...}); 
 trns.runSerial().then(() => {...});
+```
+
+###Parallel promises example
+This will run the given transaction items in parallel, executing rollbacks on all completed transaction items if any single transaction item fails to succeed.
+```javascript
+const Promise = require('bluebird');
+const TransactionItem = require('transact.js').TransactionItem;
+const Transaction = require('transact.js').Transaction;
+
+let item1 = new TransactionItem( 
+                               ()=>{ console.log("applying some change to some system"); 
+                                     return Promise.resolve(); } 
+                              ,()=>{ console.log("reversing some change to some system"); 
+                                     return Promise.resolve(); } 
+                              );
+                               
+let item2 = new TransactionItem( 
+                              ()=>{ console.log("applying some change to some system"); 
+                                    return Promise.resolve(); } 
+                             ,()=>{ console.log("reversing some change to some system"); 
+                                    return Promise.resolve(); } 
+                             );
+let trns = new Transaction(null, [item1, item2]); 
+trns.runParallel().then(() => {...}); 
+```
+
+###Serial promises example
+This will run the given transaction items in serial, executing rollbacks on all transaction items if any single transaction item fails to succeed.
+```javascript
+const Promise = require('bluebird');
+const TransactionItem = require('transact.js').TransactionItem;
+const Transaction = require('transact.js').Transaction;
+
+let item1 = new TransactionItem( 
+                               ()=>{ console.log("applying some change to some system"); 
+                                     return Promise.resolve(); } 
+                              ,()=>{ console.log("reversing some change to some system"); 
+                                     return Promise.resolve(); } 
+                              );
+                               
+let item2 = new TransactionItem( 
+                              ()=>{ console.log("applying some change to some system"); 
+                                    return Promise.resolve(); } 
+                             ,()=>{ console.log("reversing some change to some system"); 
+                                    return Promise.resolve(); } 
+                             );
+let trns = new Transaction(null, [item1, item2]); 
+trns.runParallel().then(() => {...}); 
 ```

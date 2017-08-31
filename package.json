@@ -1,6 +1,6 @@
 {
   "name": "transact.js",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "Simple Node JS based transaction manager for asynchronous (promise based) transaction management.",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,8 @@
     "bluebird": "^3.5.0",
     "lodash.foreach": "^4.5.0",
     "lodash.foreachright": "^4.4.0",
-    "lodash.isfunction": "^3.0.8"
+    "lodash.isfunction": "^3.0.8",
+    "lodash.sortby": "^4.7.0"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

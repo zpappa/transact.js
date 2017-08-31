@@ -1,7 +1,9 @@
 const Promise = require ("bluebird");
+const TimeoutError = Promise.TimeoutError;
 const forEach = require("lodash.foreach");
 const forEachRight = require("lodash.foreachright");
 const isFunction = require("lodash.isfunction");
+const sortBy = require("lodash.sortby");
 
 /**
  * A transaction item is effectively a step in the transaction process with a defined forward and backward movement
@@ -13,57 +15,103 @@ class TransactionItem {
 	 * @param forward
 	 * @param reverse
 	 * @param state
+	 * @param name
+	 * @param timeout - the time to wait on a rollback for the transaction to finish
 	 */
-	constructor(forward, reverse, state) {
+	constructor(forward, reverse, state, name, timeout) {
 		if(!(isFunction(forward) && isFunction(reverse))) {
 			throw TypeError("Forward and reverse parameters must be functions that return ES6 compatible promises.");
 		}
+
 		this.completed = false;
+
 		this.state = state ? state : null;
-		//this.state = state ? cloneDeep(state) : null;
 		this.forward = forward;
 		this.reverse = reverse;
+		this.name = name ? name : null;
+		this.order = null;
+		this.error = null;
+		this.inRollback = false;
 	}
 
+
+	_start() {
+		this._completed = [];
+		this.completed = new Promise((resolve, reject) => {
+			this._completed.push({resolve, reject})
+		});
+
+		this.complete = () => {
+			this._completed[0].resolve(true);
+		};
+
+		this.incomplete = () =>{
+			this._completed[0].resolve(false);
+		};
+	}
 	/**
 	 * Executes the transaction
-	 * @param s - only passed in for serial transactions, this is ignored when running in parallel.
+	 * @param s - the state to utilize with the transaction, can be an object containing something the function may need but wasn't known ahead of time.
 	 */
 	exec(s) {
 		return new Promise((resolve, reject) => {
-			if(!this.completed) {
+			if(this.completed === false && !this.inRollback) {
+				this._start();
 				this.state = s ? s : this.state;
-				//this.state = s ? cloneDeep(s) : this.state;
 				this.forward(this.state)
 					.then((newState) => {
 						this.state = newState;
-						//this.state = cloneDeep(newState);
-						this.completed = true;
+						this.complete();
 						resolve(this.state);
 					})
 					.catch((error) => {
-						reject("The transaction item failed to execute. "+errorAsString(error));
+						this.error = error;
+						this.incomplete();
+						reject(this._addName("The transaction item failed to execute. "+errorAsString(error)));
 					})
 			}
 			else {
-				reject("This is an executed transaction item and cannot be re-executed");
+				reject(this._addName("This is an executed transaction item and cannot be re-executed"));
 			}
 		})
 	}
 
 	rollback() {
-		return new Promise((resolve, reject) => {
-			if(this.completed) {
-				this.reverse(this.state)
-					.then(()=> {
-						this.completed = false;
+		if(this.completed == false && !this.completed instanceof Promise) {
+			this.inRollback = true;
+			return Promise.resolve();
+		}
+		else { // this is either pending or resolved
+			return new Promise((resolve, reject) => {
+				let timeout = this.timeout ? this.timeout : 1000;
+				this.completed.timeout(timeout).then((completed)=> {
+					if(completed) {
+						this.reverse(this.state)
+							.then(()=> {
+								this.completed = false;
+								resolve();
+							})
+							.catch((error) => {
+								reject(this._addName("The transaction item failed to rollback. "+errorAsString(error)));
+							})
+					}
+					else {
 						resolve();
-					})
-					.catch((error) => {
-						reject("The transaction item failed to rollback. "+errorAsString(error));
-					})
-			}
-		})
+					}
+				}).catch((error)=> {
+					if(error instanceof TimeoutError) {
+						reject("The transaction item timed out");
+					}
+					else {
+						reject(this._addName("The transaction item failed to execute. "+errorAsString(error)));
+					}
+				})
+			})
+		}
+	}
+
+	_addName(errorStr) {
+		return this.name ? this.name +": "+errorStr : errorStr;
 	}
 }
 
@@ -75,20 +123,29 @@ class Transaction {
 	/**
 	 * Pass in a transaction id which defaults to epoch, and a logger which defaults to console.
 	 * @param transactionId
+	 * @param transactionItems
 	 * @param logger
 	 */
 	constructor(transactionId, transactionItems, logger) {
-		this.transactionItems = (transactionItems && transactionItems.length) ? transactionItems : [];
+		this.transactionItems = [];
+		if(transactionItems && transactionItems.length) {
+			for(let i=0;i<transactionItems.length;i++) {
+				this.add(transactionItems[i]);
+			}
+			this.reorderItems();
+		}
+
 		this.transactionId = transactionId ? transactionId : new Date().getTime()/1000;
 		this.logger = logger ? logger : console;
 	}
 
-	/**
+	/**can you
 	 * Adds a transaction item to the ordered list.
 	 * @param transactionItem
 	 */
 	add(transactionItem) {
 		if(transactionItem instanceof TransactionItem) {
+			transactionItem.order = transactionItem.order ? transactionItem.order : this.transactionItems.length;
 			this.transactionItems.push(transactionItem);
 		}
 		else {
@@ -109,8 +166,9 @@ class Transaction {
 	 */
 	rollbackAll() {
 		let promises = [];
-		forEachRight(this.transactionItems, (item) => {
-			if(item.completed) {
+		let self = this;
+		forEachRight(self.transactionItems, (item) => {
+			if(!(self.completed === false && !self.completed instanceof Promise)) {
 				promises.push(item.rollback());
 			}
 		});
@@ -127,13 +185,14 @@ class Transaction {
 
 	/**
 	 * Runs all transaction items in parallel.
+	 * @param s - the state to utilize with ALL the transaction items, passed to ALL TransactionItem.exec() as the first argument.
 	 */
-	runParallel() {
+	runParallel(s) {
 		return new Promise((resolve, reject) => {
 			this._log("Transaction executing.");
 			let promises = [];
 			forEach(this.transactionItems, (item) => {
-				promises.push(item.exec());
+				promises.push(item.exec(s));
 			});
 			Promise.all(promises)
 				.then(() => {
@@ -141,6 +200,7 @@ class Transaction {
 					resolve();
 				})
 				.catch((error) => {
+					// now have to go through all non-pending promises and imme
 					this._error("Transaction failed. "+errorAsString(error));
 					this.rollbackAll()
 						.then(()=> {
@@ -158,12 +218,14 @@ class Transaction {
 
 	/**
 	 * Runs all transaction items in serial, chaining values from one call to the next
+	 * @param s - the state to utilize for the INITIAL transaction item, passed to the INITIAL TransactionItem.exec() as the first argument.
 	 */
-	runSerial() {
+	runSerial(s) {
 		return new Promise((resolve, reject) => {
 			if(this.transactionItems.length>0) {
 				this._log("Transaction executing.");
 				Promise.reduce(this.transactionItems, (result, p) => {
+						result = p.order==0 ? s : result;
 						return p.exec(result).then((newResult) => {
 							return newResult;
 						});
@@ -188,11 +250,38 @@ class Transaction {
 		});
 	}
 
+	/**
+	 * Produces a JSON string of the object
+	 * @returns {String}
+	 */
+	serialize() {
+		return JSON.stringify(this, null, 4);
+	}
+
+	/**
+	 * Produces a new Transaction from a JSON string
+	 * @param json
+	 * @returns {Transaction}
+	 */
+	static deserialize(json) {
+		let objectData = JSON.parse(json);
+		let transaction = new Transaction();
+		Object.assign(transaction, objectData);
+		transaction.reorderItems();
+		return transaction;
+	}
+
+	/**
+	 * called by deserialize and on constructor
+	 */
+	reorderItems() {
+		return sortBy(this.transactionItems, (ti) => ti.order)
+	}
 
 }
 
 function errorAsString(error) {
-	return error ? error.toString() : "";
+	return error ? (typeof error === 'object' ? JSON.stringify(error, null, 4) : error) : error;
 }
 
 export {
